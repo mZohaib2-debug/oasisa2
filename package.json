@@ -1,0 +1,31 @@
+{
+  "name": "oasisa2",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OasisA2 Supermarket — unified halal grocery commerce platform (web, mobile, admin, shared backend)",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .gitignore",
+    "db:generate": "pnpm --filter @oasisa2/database db:generate",
+    "db:migrate": "pnpm --filter @oasisa2/database db:migrate",
+    "db:push": "pnpm --filter @oasisa2/database db:push",
+    "db:seed": "pnpm --filter @oasisa2/database db:seed",
+    "db:studio": "pnpm --filter @oasisa2/database db:studio",
+    "db:reset": "pnpm --filter @oasisa2/database db:reset"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.3",
+    "typescript": "^5.6.2"
+  }
+}

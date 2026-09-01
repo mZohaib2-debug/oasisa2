@@ -1,0 +1,45 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env", "tsconfig.base.json"],
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "DIRECT_DATABASE_URL",
+    "AUTH_SECRET",
+    "AUTH_URL",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_SITE_URL",
+    "CLOVER_CLIENT_ID",
+    "CLOVER_CLIENT_SECRET",
+    "CLOVER_MERCHANT_ID",
+    "CLOVER_ENVIRONMENT",
+    "EXPO_PUBLIC_API_URL"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "db:generate": {
+      "cache": false
+    }
+  }
+}

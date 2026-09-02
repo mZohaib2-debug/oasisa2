@@ -7,7 +7,7 @@ import { CartQuantityControls } from '@/components/cart-line-controls';
 import { CouponForm } from '@/components/coupon-form';
 import { getActiveCartView } from '@/lib/cart';
 import { getStoreContext } from '@/lib/store-context';
-import { formatCents } from '@/lib/format';
+import { butcherSummary, formatCents } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Your Cart', robots: { index: false } };
 
@@ -45,7 +45,7 @@ export default async function CartPage() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-3">
           {view.lines.map((line) => {
-            const sel = line.butcherSelections as Record<string, string> | null;
+            const butcher = butcherSummary(line.butcherSelections);
             return (
               <div key={line.id} className="card flex gap-3 p-3">
                 <Link href={`/p/${line.slug}`}>
@@ -68,10 +68,8 @@ export default async function CartPage() {
                           ? `~${line.requestedWeightLb} lb @ ${formatCents(line.unitPriceCents)}/lb`
                           : `${formatCents(line.unitPriceCents)} each`}
                       </p>
-                      {sel && Object.keys(sel).length > 0 && (
-                        <p className="mt-0.5 text-xs text-forest-700">
-                          Butcher: {Object.values(sel).join(', ')}
-                        </p>
+                      {butcher && (
+                        <p className="mt-0.5 text-xs text-forest-700">Butcher: {butcher}</p>
                       )}
                       {line.butcherNotes && (
                         <p className="text-xs italic text-charcoal-700/60">“{line.butcherNotes}”</p>

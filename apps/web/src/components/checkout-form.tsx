@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
-import { formatCents, formatSlot } from '@/lib/format';
+import { formatCents, formatTimeRange } from '@/lib/format';
 import { checkoutAction } from '@/app/actions';
 
 interface SlotDay {
@@ -174,7 +174,7 @@ export function CheckoutForm({
                         !s.available && 'cursor-not-allowed opacity-40',
                       )}
                     >
-                      {formatSlot(day.date, s.startTime, s.endTime).split(', ')[1]}
+                      {formatTimeRange(s.startTime, s.endTime)}
                     </button>
                   ))}
                 </div>

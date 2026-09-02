@@ -678,7 +678,7 @@ model Cart {
   id              String          @id @default(cuid())
   userId          String?
   user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  anonymousId     String?         @unique // cookie / device id for guests
+  anonymousId     String? // cookie / device id for guests (a device may have many carts over time)
   storeId         String
   store           Store           @relation(fields: [storeId], references: [id])
   fulfillmentType FulfillmentType @default(PICKUP)
@@ -692,6 +692,7 @@ model Cart {
   order Order?
 
   @@index([userId])
+  @@index([anonymousId])
   @@index([status])
 }
 

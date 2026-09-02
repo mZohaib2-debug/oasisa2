@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getOrder } from '@oasisa2/api';
 import { getCurrentUser } from '@/lib/session';
-import { formatCents, formatSlot, orderStatusLabel } from '@/lib/format';
+import { butcherSummary, formatCents, formatSlot, orderStatusLabel } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Order details', robots: { index: false } };
 
@@ -51,10 +51,7 @@ export default async function OrderDetailPage({ params }: Props) {
                 </p>
                 {i.butcherInstruction && (
                   <p className="text-xs text-forest-700">
-                    Butcher:{' '}
-                    {Object.values((i.butcherInstruction.selections ?? {}) as Record<string, string>).join(
-                      ', ',
-                    )}
+                    Butcher: {butcherSummary(i.butcherInstruction.selections)}
                     {i.butcherInstruction.notes ? ` — “${i.butcherInstruction.notes}”` : ''}
                   </p>
                 )}

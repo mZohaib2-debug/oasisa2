@@ -1,97 +1,92 @@
 # OasisA2 build status
 
-Honest done / not-done. Updated as reality changes — do not mark something done
-until it runs and is verified.
+Honest done / not-done. Updated as reality changes.
 
 ## ✅ Done and verified
 
 ### Environment
 - Node + pnpm + Turborepo workspace; TS / Prettier / EditorConfig tooling
-- PostgreSQL 16 running locally; `oasisa2` database created
-- Initial Prisma migration applied
+- PostgreSQL 16 running locally; migrations applied
+- `pnpm --filter @oasisa2/web build` passes (23 routes); `pnpm test` → 43 passing
 
 ### `@oasisa2/database`
-- Unified schema, 40 models covering every entity in the brief: users & profiles,
-  addresses, stores + hours + delivery zones + fulfilment slots + notices,
-  full catalog (department/category/subcategory/brand/product/variant/image/keyword),
-  per-store price & inventory, butcher options & instructions, cart & items,
-  favorites & saved lists, orders + items + status history, payments & refunds,
-  promotions + coupons, notifications & device tokens, inventory adjustments,
-  audit log.
-- Money is `Int` cents everywhere. Weights are `Decimal` pounds.
-- Prisma client singleton.
-- **Seed** (idempotent): 2 branches with placeholder addresses/hours/zones,
-  17 departments / 48 categories / ~200 subcategories, 10 demo brands,
-  227 demo products (hero + generated filler, `isDemo: true`), per-store price &
-  inventory for both branches (incl. a demo sale and a branch-specific
-  out-of-stock), butcher option sets, 4 promotions, 3 coupons, 7 days of pickup
-  + delivery slots per branch, staff users + a demo customer with favorites, a
-  saved list and one completed order (for Buy Again).
+- Unified 40-model schema; money = `Int` cents; weights = `Decimal` lb
+- Prisma client singleton
+- Idempotent seed: 2 branches (placeholder address/hours/zones), 17 departments /
+  48 categories / ~200 subcategories, 10 brands, 227 demo products, per-store
+  price & inventory (incl. demo sales + a branch-specific out-of-stock), butcher
+  option sets, 4 promotions, 3 coupons, 7 days of pickup + delivery slots,
+  staff + a demo customer with favorites / a saved list / one completed order
 
-### `@oasisa2/commerce` — pure business logic, **40 passing tests**
-- `money` — integer-cents arithmetic, single-rounding multiply, basis-point
-  discounts, formatting.
-- `pricing` — store-resolved effective price, sale-window logic, % off, variant delta.
-- `weighted` — estimate from requested lb; reprice from actual lb; large-drift
-  re-confirmation flag; order never locked to estimate.
-- `delivery` — ZIP normalisation, zone matching, branch/zone fee & minimum
-  resolution, free-delivery threshold, minimum gate.
-- `promotions` — line-level (%/amount/BOGO/fixed-price), one order-level promo,
-  coupon evaluation (%/amount/free-delivery) with reason codes.
-- `cart` — **authoritative totals**: gross → line promos → order promo →
-  delivery fee → coupon → tax (taxable lines only, on net) → estimated total,
-  plus delivery eligibility / minimum gating.
-- `slots` — availability view, reservation guard, pure slot generator from store hours.
-- `inventory` — available qty net of reservations, coarse-state derivation,
-  reserve / release / finalize.
-- `search` — South Asian synonym query expansion (atta→flour, keema→ground meat…).
-- `orders` — order-number format, status state-machine, terminal detection.
+### `@oasisa2/commerce` — pure logic, 40 tests
+money · pricing (sale windows, % off, variant delta) · weighted items (estimate ↔
+actual-weight reprice, drift re-confirm) · delivery eligibility (ZIP/zone/fee/min/
+free-threshold) · promotions & coupons · **authoritative cart totals** · slots ·
+inventory reservation · search synonym expansion · order status state-machine
 
-### `@oasisa2/config`, `@oasisa2/types`, `@oasisa2/validation`
-- Env validation (server/client split; Stripe/Clover "configured?" helpers).
-- Branch placeholders, tax rates (placeholder), slot config, 60+ search synonyms.
-- Shared enums + `ORDER_STATUS_FLOW` state machine + analytics event names.
-- Zod schemas for store context, add/update cart, coupon, address, checkout,
-  product filters, credentials, order-status update. No schema accepts money.
+### `@oasisa2/config` / `types` / `validation`
+env validation · branch placeholders · tax/slot constants · 60+ search synonyms ·
+shared enums + `ORDER_STATUS_FLOW` · Zod request schemas (no money accepted from clients)
 
-### `@oasisa2/api` — service layer (typechecks clean; integration tests pending an app)
-- `store-context` — resolve store by slug, compute delivery quote.
-- `catalog` — navigation tree, product listing with filters + sort + pagination,
-  product detail (incl. butcher option groups + related), merchandising rails,
-  search suggest (products / categories / brands).
-- `cart` — find-or-create cart (user or anon), add/remove/set-qty, coupon,
-  fully-priced `getCartView`.
-- `orders` — `createOrderFromCart` (transactional: slot capacity + inventory
-  reservation + address + order + payment record + cart conversion), list/get,
-  `getBuyAgainItems`, `updateOrderStatus` (guarded transitions), `recordActualWeight`
-  (butcher weight → line + order total recompute).
+### `@oasisa2/api` — service layer
+store-context (+ delivery quote) · catalog (nav tree, filtered/sorted/paginated
+listing, detail with butcher groups, rails, search suggest) · slots · promotions ·
+cart (find-or-create guest/user, mutate, coupon, priced view) · orders
+(transactional checkout: slot capacity + inventory reservation + address + order +
+payment record + cart conversion; list/get; Buy Again; guarded status transitions;
+butcher actual-weight → order total recompute)
 
-## 🚧 Not started / not done
+### `apps/web` — customer storefront (Next.js 15 App Router) ✅ runnable end-to-end
+- Design system: emerald / cream / charcoal / gold; responsive; skip-link; a11y labels
+- **Store onboarding + header switcher**: pickup/delivery + branch + ZIP eligibility,
+  persisted in a cookie; guest carts (signed anon-id) and signed-in carts (session cookie)
+- **Home**: hero, weekly-specials banners, Buy Again (repeat customers), department
+  rails, shop-by-department, butcher / produce / pantry / new-arrivals rails
+- **Browse**: all-departments, department PLP, category PLP with subcategory chips,
+  filter toggles (in-stock / on-sale / halal), sort, pagination
+- **Product detail**: variant picker, weighted approximate-weight picker + live
+  estimate, **full butcher workflow** (cut / piece size / bone / thickness / skin /
+  fat + special instructions), related products, Product JSON-LD
+- **Search**: results page + type-ahead suggestions, South Asian synonym expansion
+  (atta→flour, keema→ground meat, lal mirch→red chili…)
+- **Cart**: server-priced lines, qty/remove, coupon, butcher + substitution display,
+  weighted-estimate messaging, order summary
+- **Checkout**: contact, delivery address, pickup/delivery **slot picker**, tip,
+  notes, **guest checkout** + optional account creation; transactional order
+  creation; confirmation page
+- **Account**: overview, order history + Buy Again + one-tap reorder, order detail
+  (butcher info, actual vs estimated weight, status history), favorites, saved
+  lists ("add all to cart"), login / register
+- **Mobile**: native-style bottom tab bar, mobile store switcher, tested at 375px
+- **/api** routes for the future mobile app: `/api/search`, `/api/delivery`,
+  `/api/cart`, `/api/store-context`
+- **SEO**: metadata + OpenGraph, Product + GroceryStore JSON-LD, `sitemap.xml`,
+  `robots.txt`, `/locations/glen-burnie` + `/locations/fredericksburg`
+
+Verified in a browser: onboarding → shop → weighted goat + butcher options →
+cart → checkout → order `OA2-100001` created, slot reserved 1/12, confirmation renders.
+
+## 🚧 Not done yet
 
 | Area | State |
 | --- | --- |
-| **apps/web** (Next.js storefront) | not started — next priority |
-| **apps/mobile** (Expo iOS/Android) | not started |
-| **apps/admin** (Next.js ops) | not started |
-| Auth (sessions, login, guest, Apple/Google) | schema + hashing in seed only; no runtime auth yet |
-| Stripe payment intent + webhooks | models exist; no Stripe calls |
-| Clover `POSProvider` boundary | not started |
-| Picker workflow / Butcher queue UIs | service layer supports them; no UI |
-| Notifications delivery (Expo/APNs/FCM) | models exist; no sender |
-| Analytics event pipeline | event names defined; no emitter |
-| SEO (sitemap, JSON-LD, `/locations/*`) | not started |
-| Playwright E2E for the 7 customer flows | not started |
-| CI workflow | `.github/workflows` dir exists, empty |
+| **apps/admin** (catalog / inventory / pricing / orders / promotions) | not started |
+| **apps/mobile** (Expo iOS/Android) | not started — API surface is ready |
+| **Picker workflow / Butcher queue UIs** | service layer supports them; no UI |
+| **Stripe** payment intent + webhooks | `Payment` records created as `REQUIRES_PAYMENT`; no charge |
+| **Clover `POSProvider`** boundary | not started |
+| **Notifications** delivery (Expo/APNs/FCM) | models exist; no sender |
+| **Analytics** event pipeline | event names defined; no emitter |
+| OAuth (Apple / Google sign-in) | email/password only |
+| Playwright E2E, CI workflow | not started |
 
-## Next 3 steps (recommended order)
+## Recommended next steps
 
-1. **`apps/web` storefront** — Tailwind design system (emerald/cream/charcoal/gold),
-   root layout + header (branch + pickup/delivery selector, search, cart, account),
-   store-onboarding, home merchandising, department/category PLP, product detail
-   with butcher + weighted flows, cart drawer/page, checkout (pickup/delivery/slot),
-   `/api/*` route handlers wrapping `@oasisa2/api`. This makes the platform runnable
-   end-to-end for a customer.
-2. **Auth + account area** — session cookies, login/register/guest, order history,
-   favorites, saved lists, Buy Again.
-3. **`apps/admin`** — catalog, per-branch inventory & pricing, orders + status,
-   promotions; then the picker/butcher handheld views.
+1. **apps/admin** — orders board + status transitions (reuses `updateOrderStatus`),
+   per-branch inventory & price editing, product CRUD, promotions.
+2. **Picker + Butcher screens** (can live inside admin) — `recordActualWeight` and
+   `OrderItemStatus` transitions already exist in `@oasisa2/api`.
+3. **apps/mobile** — Expo app against the `/api` routes; reuse `@oasisa2/commerce`
+   + `@oasisa2/types` directly.
+4. **Stripe** — wire `createPaymentIntent` + webhook to move `Payment` →
+   `CAPTURED` and confirm the order.

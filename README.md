@@ -4,8 +4,10 @@ One shared commerce backend for **OasisA2 Supermarket** (Glen Burnie & Frederick
 branches) powering the customer website, iOS app, Android app, admin dashboard, and
 in-store picker / butcher workflows. Halal-focused South Asian & Middle Eastern grocery.
 
-> **Status:** early build. The data layer and shared commerce engine are complete
-> and tested. The customer web app, mobile app and admin dashboard are in progress.
+> **Status:** the shared data + commerce layer and the **customer web storefront**
+> are complete and runnable end-to-end (browse → butcher/weighted cart → pickup or
+> delivery checkout → order + confirmation → account/reorder). The admin dashboard,
+> mobile app, picker/butcher UIs, and live Stripe/Clover are not built yet.
 > See [`docs/STATUS.md`](docs/STATUS.md) for the exact done / not-done breakdown.
 
 ---
@@ -18,9 +20,9 @@ One cart/order model.** Web, mobile and admin all talk to the same backend.
 ```
 oasisa2/
   apps/
-    web/      Next.js customer storefront            (planned — next)
-    mobile/   Expo / React Native iOS + Android      (planned)
-    admin/    Next.js operations dashboard           (planned)
+    web/      Next.js 15 customer storefront          ✅ built & runnable
+    mobile/   Expo / React Native iOS + Android      (planned — /api surface ready)
+    admin/    Next.js operations dashboard           (planned — next)
   packages/
     database/    Prisma schema + client + seed  (PostgreSQL, integer-cents money)
     config/      env validation, branch placeholders, tax/slot constants, search synonyms
@@ -94,7 +96,8 @@ Demo coupons: `WELCOME10`, `FREEDELIVERY`, `EID5`.
 ## Commands
 
 ```bash
-pnpm dev          # run all app dev servers (once apps exist)
+pnpm dev          # run app dev servers (web on http://localhost:3000)
+pnpm --filter @oasisa2/web dev   # just the storefront
 pnpm build        # turbo build
 pnpm lint         # eslint across the workspace
 pnpm typecheck    # tsc --noEmit across every package

@@ -28,8 +28,8 @@ export function StoreOnboarding({ stores }: { stores: StoreOption[] }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-forest-950/70 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-forest-950/70 p-4">
+      <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <span className="grid h-11 w-11 place-items-center rounded-xl bg-forest-700 text-xl font-black text-white">
           O
         </span>

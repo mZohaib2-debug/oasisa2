@@ -3,8 +3,10 @@ import './globals.css';
 import { listStores } from '@oasisa2/api';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { MobileNav } from '@/components/mobile-nav';
 import { StoreOnboarding } from '@/components/store-onboarding';
 import { hasStoreContext } from '@/lib/store-context';
+import { getCartItemCount } from '@/lib/cart';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
@@ -28,7 +30,10 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const chosen = await hasStoreContext();
-  const stores = chosen ? [] : await listStores();
+  const [stores, cartCount] = await Promise.all([
+    chosen ? Promise.resolve([]) : listStores(),
+    getCartItemCount(),
+  ]);
 
   return (
     <html lang="en">
@@ -40,10 +45,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           Skip to content
         </a>
         <Header />
-        <main id="main" className="container-page min-h-[60vh] pb-12 pt-6">
+        <main id="main" className="container-page min-h-[60vh] pb-24 pt-6 md:pb-12">
           {children}
         </main>
         <Footer />
+        <MobileNav cartCount={cartCount} />
         {!chosen && (
           <StoreOnboarding
             stores={stores.map((s) => ({

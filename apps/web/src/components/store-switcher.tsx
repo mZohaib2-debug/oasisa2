@@ -67,8 +67,8 @@ export function StoreSwitcher({
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-charcoal-900/40 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-md rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-charcoal-900/40 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold text-charcoal-900">How would you like to shop?</h2>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close">

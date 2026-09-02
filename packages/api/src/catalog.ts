@@ -79,6 +79,35 @@ export function toProductCard(p: RawProduct, storeId: string): ProductCard {
   };
 }
 
+export async function getDepartmentBySlug(slug: string) {
+  return prisma.department.findUnique({
+    where: { slug },
+    include: {
+      categories: {
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+        include: { subcategories: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } } },
+      },
+    },
+  });
+}
+
+export async function getCategoryBySlug(departmentSlug: string, categorySlug: string) {
+  const department = await prisma.department.findUnique({ where: { slug: departmentSlug } });
+  if (!department) return null;
+  return prisma.category.findUnique({
+    where: { departmentId_slug: { departmentId: department.id, slug: categorySlug } },
+    include: {
+      department: true,
+      subcategories: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } },
+    },
+  });
+}
+
+export async function listBrands() {
+  return prisma.brand.findMany({ orderBy: { name: 'asc' } });
+}
+
 /** Department -> category navigation tree for the header + browse screens. */
 export async function getNavigationTree() {
   const departments = await prisma.department.findMany({

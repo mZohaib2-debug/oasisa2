@@ -8,15 +8,49 @@ importers:
 
   .:
     devDependencies:
+      '@types/node':
+        specifier: ^22.7.4
+        version: 22.20.1
       prettier:
         specifier: ^3.3.3
         version: 3.9.6
+      tsx:
+        specifier: ^4.19.1
+        version: 4.23.13
       turbo:
         specifier: ^2.1.3
         version: 2.10.12
       typescript:
         specifier: ^5.6.2
         version: 5.9.3
+
+  packages/api:
+    dependencies:
+      '@oasisa2/commerce':
+        specifier: workspace:*
+        version: link:../commerce
+      '@oasisa2/config':
+        specifier: workspace:*
+        version: link:../config
+      '@oasisa2/database':
+        specifier: workspace:*
+        version: link:../database
+      '@oasisa2/types':
+        specifier: workspace:*
+        version: link:../types
+      '@oasisa2/validation':
+        specifier: workspace:*
+        version: link:../validation
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.6.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.1
+        version: 2.1.9(@types/node@22.20.1)
 
   packages/commerce:
     dependencies:
@@ -92,6 +126,22 @@ importers:
       typescript:
         specifier: ^5.6.2
         version: 5.9.3
+
+  packages/validation:
+    dependencies:
+      '@oasisa2/types':
+        specifier: workspace:*
+        version: link:../types
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.6.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.1
+        version: 2.1.9(@types/node@22.20.1)
 
 packages:
 

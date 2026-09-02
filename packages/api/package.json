@@ -1,5 +1,5 @@
 {
-  "name": "@oasisa2/config",
+  "name": "@oasisa2/api",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -10,6 +10,11 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@oasisa2/commerce": "workspace:*",
+    "@oasisa2/config": "workspace:*",
+    "@oasisa2/database": "workspace:*",
+    "@oasisa2/types": "workspace:*",
+    "@oasisa2/validation": "workspace:*",
     "zod": "^3.23.8"
   },
   "devDependencies": {

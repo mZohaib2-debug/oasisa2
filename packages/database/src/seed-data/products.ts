@@ -40,7 +40,8 @@ export interface SeedProduct {
   unitType: SeedUnitType;
   packageSize?: string;
   netWeightLb?: number;
-  basePriceCents: number;
+  /** required for EACH items; WEIGHT items use pricePerPoundCents instead */
+  basePriceCents?: number;
   compareAtPriceCents?: number;
   pricePerPoundCents?: number;
   averageWeightLb?: number;

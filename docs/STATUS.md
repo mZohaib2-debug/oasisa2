@@ -2,6 +2,9 @@
 
 Honest done / not-done. Updated as reality changes.
 
+**Runnable now:** `pnpm --filter @oasisa2/web dev` (storefront, :3000) ·
+`pnpm --filter @oasisa2/admin dev` (operations, :3001). Both build clean.
+
 ## ✅ Done and verified
 
 ### Environment
@@ -66,27 +69,53 @@ butcher actual-weight → order total recompute)
 Verified in a browser: onboarding → shop → weighted goat + butcher options →
 cart → checkout → order `OA2-100001` created, slot reserved 1/12, confirmation renders.
 
+### `apps/admin` — staff operations dashboard (Next.js 15) ✅ runnable
+- Role-gated staff auth (ADMIN / STORE_MANAGER / PICKER / BUTCHER); per-branch
+  store scope switcher; every mutation writes an `AuditLog` row
+- **Dashboard**: 30-day revenue / AOV / orders / open-orders / low-stock KPIs,
+  revenue sparkline, pick & butcher queue counts, top products, recent orders,
+  staff activity feed
+- **Orders**: filterable list (status / fulfilment / search / date), detail with
+  items + butcher instructions + customer + address + slot + payment, **guarded
+  status transitions** (`assertTransition`) with timeline, **printable pick sheet**
+- **Picking queue**: per-order item checklist — Picked / Substitute (+note) /
+  Not available / Send to butcher; order auto-advances when all items resolve
+- **Butcher queue**: cut/bone/instructions + actual-weight entry →
+  `recordActualWeight` recomputes the line and order final total
+  (verified: OA2-100001 est 3 lb → actual 3.25 lb → $29.97 → $32.47)
+- **Catalog**: product list with per-branch price & stock; product editor
+  (details, per-branch price + sale, inventory adjust with reason codes,
+  temporary hold); create product; brands
+- **Inventory**: low/out-of-stock report, absolute-quantity adjustments (audited)
+- **Promotions & coupons**: list, activate/deactivate, create (percent / amount /
+  BOGO / fixed price; order / product / category / department scope; per-store)
+- **Stores**: edit address / phone / hours / prep times / delivery fee-min-free
+  threshold (**unlocks the TBD placeholders**), delivery-zone CRUD, store notices,
+  regenerate time slots from hours
+- **Time slots**: per-day view, open/close individual slots
+- **Customers** list, **Staff** management (ADMIN only), **Reports**
+- Inventory reservations are finalised on `PACKED` and released on `CANCELLED`
+  inside a transaction
+
 ## 🚧 Not done yet
 
 | Area | State |
 | --- | --- |
-| **apps/admin** (catalog / inventory / pricing / orders / promotions) | not started |
-| **apps/mobile** (Expo iOS/Android) | not started — API surface is ready |
-| **Picker workflow / Butcher queue UIs** | service layer supports them; no UI |
+| **apps/mobile** (Expo iOS/Android) | not started — `/api` surface is ready |
 | **Stripe** payment intent + webhooks | `Payment` records created as `REQUIRES_PAYMENT`; no charge |
 | **Clover `POSProvider`** boundary | not started |
 | **Notifications** delivery (Expo/APNs/FCM) | models exist; no sender |
 | **Analytics** event pipeline | event names defined; no emitter |
+| **Driver app** | schema-ready; no app |
 | OAuth (Apple / Google sign-in) | email/password only |
 | Playwright E2E, CI workflow | not started |
+| Butcher-option editing in admin | shipped via seed; read-only in admin |
 
 ## Recommended next steps
 
-1. **apps/admin** — orders board + status transitions (reuses `updateOrderStatus`),
-   per-branch inventory & price editing, product CRUD, promotions.
-2. **Picker + Butcher screens** (can live inside admin) — `recordActualWeight` and
-   `OrderItemStatus` transitions already exist in `@oasisa2/api`.
-3. **apps/mobile** — Expo app against the `/api` routes; reuse `@oasisa2/commerce`
-   + `@oasisa2/types` directly.
-4. **Stripe** — wire `createPaymentIntent` + webhook to move `Payment` →
-   `CAPTURED` and confirm the order.
+1. **apps/mobile** — Expo app against the `/api` routes; reuse `@oasisa2/commerce`
+   + `@oasisa2/types` directly. Bottom nav: Home / Browse / Search / Orders / Cart.
+2. **Stripe** — wire `createPaymentIntent` + webhook to move `Payment` →
+   `CAPTURED` and confirm the order; add Apple Pay / Google Pay on mobile.
+3. **Notifications** — an Expo push sender keyed off `OrderStatusHistory` inserts.
+4. **Clover `POSProvider`** — provider interface with a `mock` implementation.

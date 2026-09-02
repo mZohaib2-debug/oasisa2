@@ -4,11 +4,20 @@ One shared commerce backend for **OasisA2 Supermarket** (Glen Burnie & Frederick
 branches) powering the customer website, iOS app, Android app, admin dashboard, and
 in-store picker / butcher workflows. Halal-focused South Asian & Middle Eastern grocery.
 
-> **Status:** the shared data + commerce layer and the **customer web storefront**
-> are complete and runnable end-to-end (browse → butcher/weighted cart → pickup or
-> delivery checkout → order + confirmation → account/reorder). The admin dashboard,
-> mobile app, picker/butcher UIs, and live Stripe/Clover are not built yet.
+> **Status:** the shared data + commerce layer, the **customer web storefront**, and
+> the **staff operations dashboard** (orders, picking, butcher queue, catalog,
+> inventory, pricing, promotions, store config, reports) are complete and runnable
+> end-to-end. The mobile app and live Stripe/Clover are not built yet.
 > See [`docs/STATUS.md`](docs/STATUS.md) for the exact done / not-done breakdown.
+
+### Demo staff logins (admin, http://localhost:3001)
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@oasisa2.test` | `password123` |
+| Store manager | `manager.gb@oasisa2.test` | `password123` |
+| Picker | `picker.gb@oasisa2.test` | `password123` |
+| Butcher | `butcher.gb@oasisa2.test` | `password123` |
 
 ---
 
@@ -20,9 +29,9 @@ One cart/order model.** Web, mobile and admin all talk to the same backend.
 ```
 oasisa2/
   apps/
-    web/      Next.js 15 customer storefront          ✅ built & runnable
+    web/      Next.js 15 customer storefront          ✅ built & runnable (:3000)
+    admin/    Next.js 15 operations dashboard         ✅ built & runnable (:3001)
     mobile/   Expo / React Native iOS + Android      (planned — /api surface ready)
-    admin/    Next.js operations dashboard           (planned — next)
   packages/
     database/    Prisma schema + client + seed  (PostgreSQL, integer-cents money)
     config/      env validation, branch placeholders, tax/slot constants, search synonyms

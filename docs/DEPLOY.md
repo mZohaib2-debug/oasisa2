@@ -1,40 +1,32 @@
 # Deploying OasisA2 (Vercel + Neon Postgres)
 
-This is the "Option B" path: a permanent, always-on URL for the storefront (and the
-admin dashboard) on free / low-cost tiers. It doubles as the production pipeline —
-when you're ready to go live you add a domain and real Stripe keys, nothing else changes.
+Permanent, always-on URLs for the storefront and the admin dashboard. Free / low-cost
+tiers. Same pipeline becomes production later (add a domain + Stripe keys).
 
 The repo is already prepared for this:
 
-- `packages/database` runs `prisma generate` on install (`postinstall`) and has the
-  Vercel/Lambda binary target baked into `schema.prisma`.
-- `apps/web` and `apps/admin` `build` scripts are plain `next build` (they read env
-  from the platform, not from a local `.env`). Use `pnpm --filter … build:local` to
-  build locally against your `.env`.
-- The storefront derives its public URL from `VERCEL_PROJECT_PRODUCTION_URL`
-  automatically, so `NEXT_PUBLIC_SITE_URL` is optional.
+- `packages/database` runs `prisma generate` on install and has the Vercel/Lambda
+  binary target in `schema.prisma`.
+- `apps/web` / `apps/admin` `build` = plain `next build` (env comes from the platform).
+  `build:local` keeps `.env` for local use.
+- The storefront derives its public URL from `VERCEL_PROJECT_PRODUCTION_URL`, so
+  `NEXT_PUBLIC_SITE_URL` is optional.
+
+> **A Neon project already exists** for this repo: `oasisa2` (`morning-breeze-73135922`,
+> AWS us-east-1, Postgres 16, free plan). Get its connection strings from
+> <https://console.neon.tech> → project **oasisa2** → **Connect**, or ask Claude to
+> re-print them. You need the **pooled** string (host has `-pooler`) and the
+> **direct** string (no `-pooler`).
 
 ---
 
-## 1. Create the database (Neon)
-
-1. Sign up at <https://neon.tech> (free tier is fine to start).
-2. Create a project — name it `oasisa2`, Postgres 16, closest region.
-3. From the project dashboard, copy **two** connection strings:
-   - **Pooled** (host contains `-pooler`) → this is `DATABASE_URL`
-   - **Direct** (no `-pooler`) → this is `DIRECT_DATABASE_URL`
-4. Add `?sslmode=require&pgbouncer=true&connection_limit=1` to the **pooled** URL if
-   it isn't already there. Leave the direct URL with just `?sslmode=require`.
-
-## 2. Load the schema + demo data into Neon
-
-From your machine, run migrations and seed against Neon (one-time):
+## 1. Load the schema + demo data into Neon (from your Mac — one time)
 
 ```bash
 cd "/Users/muhammadzohaib/Desktop/GROCERY STORE"
 
-export DATABASE_URL='postgresql://…-pooler…/neondb?sslmode=require&pgbouncer=true&connection_limit=1'
-export DIRECT_DATABASE_URL='postgresql://…(direct, no -pooler)…/neondb?sslmode=require'
+export DATABASE_URL='<<POOLED string>>&pgbouncer=true&connection_limit=1'
+export DIRECT_DATABASE_URL='<<DIRECT string (no -pooler)>>'
 
 pnpm --filter @oasisa2/database exec prisma migrate deploy
 pnpm --filter @oasisa2/database exec tsx prisma/seed.ts
@@ -42,95 +34,75 @@ pnpm --filter @oasisa2/database exec tsx prisma/seed.ts
 unset DATABASE_URL DIRECT_DATABASE_URL
 ```
 
-## 3. Generate a production auth secret
+Expect: `2 stores`, `17 departments`, `227 products`, `120 slots`, staff + demo customer.
+
+## 2. Fresh production auth secret
 
 ```bash
 openssl rand -base64 32
 ```
 
-Keep this value — it goes in both Vercel projects as `AUTH_SECRET`. It must be
-**different** from your local one.
+Save it — goes in both Vercel projects as `AUTH_SECRET` (must differ from local).
 
-## 4. Push the repo to GitHub
+## 3. Push to GitHub
 
 ```bash
 cd "/Users/muhammadzohaib/Desktop/GROCERY STORE"
-# create an empty repo at github.com/<you>/oasisa2 first (private is fine), then:
-git remote add origin git@github.com:<you>/oasisa2.git
+# create an empty repo at github.com/<you>/oasisa2 (Private), then:
+git remote add origin https://github.com/<you>/oasisa2.git
 git push -u origin main
 ```
 
-## 5. Create the Vercel projects
+## 4. Two Vercel projects (dashboard: "Add New… → Project" → import the repo)
 
-Do this twice — once for the storefront, once for the admin dashboard.
+Import the repo twice.
 
 | Setting | Storefront | Admin |
 | --- | --- | --- |
-| Import | the `oasisa2` GitHub repo | same repo |
 | **Root Directory** | `apps/web` | `apps/admin` |
-| Framework preset | Next.js (auto) | Next.js (auto) |
-| Build / Install / Output | leave as auto-detected | leave as auto-detected |
+| Framework | Next.js (auto) | Next.js (auto) |
+| Build / Install / Output | leave auto | leave auto |
 | Project name | `oasisa2-web` | `oasisa2-admin` |
 
-> Vercel detects the pnpm workspace at the repo root and installs it; the
-> `postinstall` in `packages/database` runs `prisma generate`. No custom commands needed.
-
-### Environment variables (both projects, "Production" + "Preview")
+**Environment Variables** (add to *Production* and *Preview* on **both** projects):
 
 | Name | Value |
 | --- | --- |
-| `DATABASE_URL` | Neon **pooled** URL |
-| `DIRECT_DATABASE_URL` | Neon **direct** URL |
-| `AUTH_SECRET` | the value from step 3 |
+| `DATABASE_URL` | Neon **pooled** string + `&pgbouncer=true&connection_limit=1` |
+| `DIRECT_DATABASE_URL` | Neon **direct** string |
+| `AUTH_SECRET` | value from step 2 |
 
-Storefront only, optional (only if you want a fixed canonical URL before adding a domain):
+Leave Stripe / Clover / Apple / Google unset. Hit **Deploy** on each (~2–4 min).
 
-| `NEXT_PUBLIC_SITE_URL` | `https://oasisa2-web.vercel.app` |
+Result:
+- `https://oasisa2-web.vercel.app` — storefront (share with the store owner)
+- `https://oasisa2-admin.vercel.app` — operations dashboard
 
-Leave Stripe / Clover / Apple / Google variables unset — the code treats them as
-"not configured".
+Every `git push` to `main` redeploys both.
 
-### Deploy
+## 5. Lock down + clean up
 
-Hit **Deploy** on each project. First build takes ~2–4 min. You'll get:
+- Vercel → `oasisa2-admin` → Settings → **Deployment Protection** → enable
+  **Vercel Authentication** (only people you invite can even load it).
+- Sign in to the admin as `admin@oasisa2.test` / `password123` → **Staff** → set real
+  passwords for every account.
 
-- `https://oasisa2-web.vercel.app` — the storefront (share this with the store owner)
-- `https://oasisa2-admin.vercel.app` — the operations dashboard
+## 6. Before real launch
 
-Every `git push` to `main` redeploys both automatically.
+- [ ] Domain → `oasisa2-web` (root) + `oasisa2-admin` (subdomain)
+- [ ] Store owner fills real address / phone / hours / delivery ZIPs / fees in
+      admin → **Stores** (replaces the `TBD` placeholders)
+- [ ] Store owner reviews / corrects demo prices; hide `isDemo` products
+- [ ] Live **Stripe** keys + webhook
+- [ ] Rotate the Neon password; Vercel env is already encrypted
+- [ ] Vercel **Pro** ($20/mo, required for commercial use); Neon paid tier when you
+      outgrow free compute hours
 
-## 6. Lock down the admin
-
-The admin has its own staff login, but add a second gate so it's never publicly
-browsable:
-
-- Vercel → `oasisa2-admin` → Settings → Deployment Protection → **Vercel Authentication**
-  (or Password Protection on Pro). Only people you invite can load it at all.
-
-Then change the demo staff passwords: sign in to the admin as `admin@oasisa2.test`
-→ Staff → set new passwords for each account. (Or run one SQL update against Neon.)
-
-## 7. Before real launch (production checklist)
-
-- [ ] Buy a domain, add it to `oasisa2-web` (root) and `oasisa2-admin` (subdomain)
-- [ ] Store owner fills in the real address / phone / hours / delivery ZIPs / fees
-      in the admin → Stores page (replaces the `TBD` placeholders)
-- [ ] Store owner reviews / corrects the demo product prices
-- [ ] Add live **Stripe** keys (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-      `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) + configure the webhook endpoint
-- [ ] Move `DATABASE_URL` / `AUTH_SECRET` to Vercel's encrypted env (they already are)
-      and rotate the Neon password
-- [ ] Upgrade Vercel to **Pro** ($20/mo) — required for commercial use — and Neon to
-      a paid tier when you outgrow the free compute hours
-- [ ] Turn off demo data: the seed marks sample products `isDemo: true`; hide or
-      delete them once the real catalog is entered
-
-## Cost summary
+## Cost
 
 | Stage | Vercel | Neon | Total |
 | --- | --- | --- | --- |
 | Owner review | Hobby (free) | Free | $0 |
-| Production | Pro ($20/mo) | Launch (~$19/mo) | ~$40/mo + domain |
+| Production | Pro ($20/mo) | ~$19/mo | ~$40/mo + domain |
 
-Alternatives if you'd rather one bill: Railway or Render can host both apps + Postgres
-for roughly $15–25/mo total.
+One-bill alternative: Railway or Render (~$15–25/mo for both apps + Postgres).

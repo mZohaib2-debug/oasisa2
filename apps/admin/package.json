@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e ../../.env -- next dev -p 3001",
-    "build": "dotenv -e ../../.env -- next build",
-    "start": "dotenv -e ../../.env -- next start -p 3001",
+    "build": "next build",
+    "build:local": "dotenv -e ../../.env -- next build",
+    "start": "next start -p 3001",
+    "start:local": "dotenv -e ../../.env -- next start -p 3001",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },

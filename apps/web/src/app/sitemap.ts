@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { prisma } from '@oasisa2/database';
+import { siteUrl } from '@/lib/site';
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const BASE = siteUrl();
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [departments, categories, products, stores] = await Promise.all([

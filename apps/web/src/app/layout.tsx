@@ -7,8 +7,9 @@ import { MobileNav } from '@/components/mobile-nav';
 import { StoreOnboarding } from '@/components/store-onboarding';
 import { hasStoreContext } from '@/lib/store-context';
 import { getCartItemCount } from '@/lib/cart';
+import { siteUrl } from '@/lib/site';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const SITE_URL = siteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

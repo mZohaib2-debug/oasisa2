@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e ../../.env -- next dev -p 3001",
-    "build": "next build",
-    "build:local": "dotenv -e ../../.env -- next build",
+    "build": "pnpm --filter @oasisa2/database run db:generate && next build",
+    "build:local": "dotenv -e ../../.env -- pnpm --filter @oasisa2/database run db:generate && dotenv -e ../../.env -- next build",
     "start": "next start -p 3001",
     "start:local": "dotenv -e ../../.env -- next start -p 3001",
     "lint": "next lint",

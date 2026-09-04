@@ -4,21 +4,23 @@ import { prisma } from '@oasisa2/database';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-type Props = { params: Promise<{ slug: string }> };
+// Rendered per request — never queries the database during `next build`.
+export const dynamic = 'force-dynamic';
 
-export async function generateStaticParams() {
-  const stores = await prisma.store.findMany({ select: { slug: true } });
-  return stores.map((s) => ({ slug: s.slug }));
-}
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const store = await prisma.store.findUnique({ where: { slug } });
-  if (!store) return {};
-  return {
-    title: `${store.name} — Hours & Info`,
-    description: `Visit OasisA2 ${store.shortName}: halal groceries, fresh butcher service, pickup and local delivery.`,
-  };
+  try {
+    const store = await prisma.store.findUnique({ where: { slug } });
+    if (!store) return {};
+    return {
+      title: `${store.name} — Hours & Info`,
+      description: `Visit OasisA2 ${store.shortName}: halal groceries, fresh butcher service, pickup and local delivery.`,
+    };
+  } catch {
+    return {};
+  }
 }
 
 export default async function LocationPage({ params }: Props) {
